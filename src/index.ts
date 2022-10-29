@@ -46,6 +46,8 @@ const sendLineNotify = async (message?: string, notificationDisabled = false) =>
   }
 }
 
+let milestoneSent = {}
+
 const checkAndNotify = async (mileStoneNotify = false) => {
   console.log(`[${dayjs().format('YYYY-MM-DD HH:mm:ss')}]: Checking...${mileStoneNotify ? ' (for milestone every 5 seconds)' : ' (every 15 minutes)'}`)
 
@@ -67,10 +69,15 @@ const checkAndNotify = async (mileStoneNotify = false) => {
       await sendLineNotify(message)
     }
     else {
-      const milestone = 100
-      const milestoneReached = numberOfParticipants.total % milestone === 0
-      if (milestoneReached)
-        await sendLineNotify(message, true)
+      const milestone = 500
+      const milestoneReached = Object.keys(numberOfParticipants).some(date => numberOfParticipants[date] % milestone === 0)
+      if (milestoneReached) {
+        if (Object.entries(numberOfParticipants).every(([date, sent]) => milestoneSent[date] === sent))
+          return
+        console.log('Milestone reached')
+        await sendLineNotify(message)
+        milestoneSent = numberOfParticipants
+      }
     }
   }
   catch (error) {}
@@ -81,7 +88,7 @@ const main = async () => {
 
   checkAndNotify()
 
-  schedule('*/15 7-17 * * *', () => checkAndNotify())
+  schedule('0 7-17 * * *', () => checkAndNotify())
   schedule('*/5 * * * * *', () => checkAndNotify(true))
 }
 
