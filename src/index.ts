@@ -79,6 +79,8 @@ const checkAndNotify = async (mileStoneNotify = false) => {
 const main = async () => {
   await dbConnect()
 
+  checkAndNotify()
+
   schedule('*/15 7-17 * * *', () => checkAndNotify())
   schedule('*/5 * * * * *', () => checkAndNotify(true))
 }
